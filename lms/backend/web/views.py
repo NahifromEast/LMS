@@ -33,9 +33,20 @@ def home(request):
     return render(request, 'home.html')  # Use a template for the homepage
 
 
+def role_required(role):
+    def decorator(func):
+        def wrapper(request, *args, **kwargs):
+            user_role = request.headers.get("Role")  # Example: Use JWT or headers
+            if user_role != role:
+                return JsonResponse({"error": "Permission denied"}, status=403)
+            return func(request, *args, **kwargs)
+        return wrapper
+    return decorator
+
 #Admin tasks would include these tasks below
 
 @csrf_exempt
+@role_required("admin")
 def create_school(request):
     if request.method == 'POST':
         try:
@@ -61,7 +72,9 @@ def get_schools(request):
     schools = list(mongo_db.schools.find({}, {"_id": 0}))  # Exclude ObjectId
     return JsonResponse(schools, safe=False)
 
+
 @csrf_exempt
+@role_required("admin")
 def update_school(request, school_id):
     if request.method == 'PUT':
         try:
@@ -99,6 +112,7 @@ def search_schools(request):
     return JsonResponse(schools, safe=False)
 
 @csrf_exempt
+@role_required("admin")
 def assign_manager(request, school_id):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -110,7 +124,7 @@ def assign_manager(request, school_id):
         return JsonResponse({"message": "Manager assigned successfully"})
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
-
+@role_required("admin")
 def create_language(request):
     if request.method == "POST":
         data = json.loads(request.body)
@@ -122,25 +136,28 @@ def create_language(request):
         return JsonResponse({"message": "Language added successfully"})
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
+@role_required("admin")
 def get_languages(request):
     if request.method == "GET":
         languages = list(mongo_db.languages.find({}, {"_id": 0}))
         return JsonResponse(languages, safe=False)
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
-
+@role_required("admin")
 def get_pending_users(request):
     if request.method == "GET":
         users = list(mongo_db.users.find({"status": "pending"}, {"_id": 0}))
         return JsonResponse(users, safe=False)
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
+@role_required("admin")
 def approve_user(request, user_id):
     if request.method == "POST":
         mongo_db.users.update_one({"_id": user_id}, {"$set": {"status": "approved"}})
         return JsonResponse({"message": "User approved successfully"})
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
+@role_required("admin")
 def reject_user(request, user_id):
     if request.method == "POST":
         mongo_db.users.update_one({"_id": user_id}, {"$set": {"status": "rejected"}})
@@ -199,6 +216,7 @@ def update_user(request, user_id):
     return JsonResponse({"error": "Invalid request method"}, status=400)
 
 # Delete a user
+
 def delete_user(request, user_id):
     if request.method == 'DELETE':
         mongo_db.users.delete_one({"_id": ObjectId(user_id)})
@@ -323,5 +341,157 @@ def enroll_students(request, course_id):
     mongo_db.courses.update_one({"_id": course_id}, {"$addToSet": {"students": {"$each": student_ids}}})
     return JsonResponse({"message": "Students enrolled successfully"})
 
+
+
+def log_action(action, details):
+    mongo_db.logs.insert_one({
+        "action": action,
+        "details": details,
+        "timestamp": datetime.datetime.now()
+    })
+
+
+
+
+#Manager tasks would include these tasks below
+
+@csrf_exempt
+@role_required("manager")
+def assign_teacher(request, school_id, course_id):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            teacher_id = data.get("teacher_id")
+            mongo_db.courses.update_one(
+                {"_id": ObjectId(course_id), "school_id": ObjectId(school_id)},
+                {"$set": {"teacher": teacher_id}}
+            )
+            return JsonResponse({"message": "Teacher assigned to course successfully"}, status=200)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+@csrf_exempt
+@role_required("manager")
+def enroll_student(request, school_id):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            student = {
+                "name": data.get("name"),
+                "email": data.get("email"),
+                "school_id": ObjectId(school_id),
+                "created_at": datetime.datetime.now()
+            }
+            result = mongo_db.students.insert_one(student)
+            return JsonResponse({"message": "Student enrolled successfully", "student_id": str(result.inserted_id)}, status=201)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+@csrf_exempt
+@role_required("manager")
+def update_student(request, school_id, student_id):
+    if request.method == "PUT":
+        try:
+            data = json.loads(request.body)
+            update_data = {
+                "name": data.get("name"),
+                "email": data.get("email"),
+            }
+            mongo_db.students.update_one(
+                {"_id": ObjectId(student_id), "school_id": ObjectId(school_id)},
+                {"$set": update_data}
+            )
+            return JsonResponse({"message": "Student updated successfully"}, status=200)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+@csrf_exempt
+@role_required("manager")
+def remove_student(request, school_id, student_id):
+    if request.method == "DELETE":
+        try:
+            mongo_db.students.delete_one({"_id": ObjectId(student_id), "school_id": ObjectId(school_id)})
+            return JsonResponse({"message": "Student removed successfully"}, status=200)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+@csrf_exempt
+@role_required("manager")
+def view_school_reports(request, school_id):
+    if request.method == "GET":
+        try:
+            school = mongo_db.schools.find_one({"_id": ObjectId(school_id)})
+            if not school:
+                return JsonResponse({"error": "School not found"}, status=404)
+            
+            courses_count = mongo_db.courses.count_documents({"school_id": ObjectId(school_id)})
+            students_count = mongo_db.students.count_documents({"school_id": ObjectId(school_id)})
+            teachers_count = mongo_db.teachers.count_documents({"school_id": ObjectId(school_id)})
+            
+            return JsonResponse({
+                "school_name": school["name"],
+                "courses_count": courses_count,
+                "students_count": students_count,
+                "teachers_count": teachers_count,
+            }, status=200)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+@csrf_exempt
+@role_required("manager")
+def approve_course(request, school_id, course_id):
+    if request.method == "POST":
+        try:
+            mongo_db.courses.update_one(
+                {"_id": ObjectId(course_id), "school_id": ObjectId(school_id)},
+                {"$set": {"status": "approved"}}
+            )
+            return JsonResponse({"message": "Course approved successfully"}, status=200)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+@csrf_exempt
+@role_required("manager")
+def reject_course(request, school_id, course_id):
+    if request.method == "POST":
+        try:
+            mongo_db.courses.update_one(
+                {"_id": ObjectId(course_id), "school_id": ObjectId(school_id)},
+                {"$set": {"status": "rejected"}}
+            )
+            return JsonResponse({"message": "Course rejected successfully"}, status=200)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+
+@csrf_exempt
+@role_required("manager")
+def create_announcement(request, school_id):
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body)
+            announcement = {
+                "title": data.get("title"),
+                "content": data.get("content"),
+                "school_id": ObjectId(school_id),
+                "created_at": datetime.datetime.now()
+            }
+            mongo_db.announcements.insert_one(announcement)
+            return JsonResponse({"message": "Announcement created successfully"}, status=201)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=400)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
 
 
