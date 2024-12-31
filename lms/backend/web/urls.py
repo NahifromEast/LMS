@@ -58,5 +58,34 @@ urlpatterns = [
     path('course/delete/<str:course_id>/', views.delete_course, name='delete_course'),
     
 
+    # Assign Teacher to Course
+    path('school/<str:school_id>/course/<str:course_id>/assign_teacher/', views.assign_teacher, name='assign_teacher'),
+    
+    # Manage Students
+    path('school/<str:school_id>/student/enroll/', views.enroll_student, name='enroll_student'),
+    path('school/<str:school_id>/student/<str:student_id>/update/', views.update_student, name='update_student'),
+    path('school/<str:school_id>/student/<str:student_id>/remove/', views.remove_student, name='remove_student'),
+    
+    # View School Reports
+    path('school/<str:school_id>/reports/', views.view_school_reports, name='view_school_reports'),
+    
+    # Manage Courses
+    path('school/<str:school_id>/course/<str:course_id>/approve/', views.approve_course, name='approve_course'),
+    path('school/<str:school_id>/course/<str:course_id>/reject/', views.reject_course, name='reject_course'),
+    
+    # Add Announcements
+    path('school/<str:school_id>/announcements/', views.create_announcement, name='create_announcement'),
+    
+    # List Teachers and Students
+    path('school/<str:school_id>/teachers/', views.list_teachers, name='list_teachers'),
+    path('school/<str:school_id>/students/', views.list_students, name='list_students'),
+
+    path('students/<student_id>/view/', views.view_student, name='view_student'),
+    path('course/<course_id>/students/', views.view_students_in_course, name='view_students_in_course'),
+    path('course/<course_id>/assignments/', views.view_assignments_for_course, name='view_assignments_for_course'),
+    path('course/<course_id>/reports/', views.view_course_reports, name='view_course_reports'),
+    path('course/<course_id>/activity/', views.track_student_activity, name='track_student_activity'),
+    path('student-group/create/', views.create_student_group, name='create_student_group'),
+
     
 ]
