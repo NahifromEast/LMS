@@ -87,5 +87,29 @@ urlpatterns = [
     path('course/<course_id>/activity/', views.track_student_activity, name='track_student_activity'),
     path('student-group/create/', views.create_student_group, name='create_student_group'),
 
+
+    path('logs/', views.get_logs, name='get_logs'),
+    path('search/', views.search, name='search'),
+
+    path('auth/generate_mfa/', views.generate_mfa_code, name='generate_mfa_code'),
+    path('auth/validate_mfa/', views.validate_mfa_code, name='validate_mfa_code'),
     
+    path('manager/course/<str:course_id>/assignment/<str:assignment_id>/remove/', views.remove_assignment, name='remove_assignment'),
+
+
+
+    
+]
+
+
+
+messaging_patterns = [
+    path("send_message/", views.send_message, name="send_message"),
+    path("get_messages/<str:user_id>/", views.get_messages, name="get_messages"),
+    path("mark_message_read/<str:message_id>/", views.mark_message_read, name="mark_message_read"),
+    path("delete_message/<str:message_id>/", views.delete_message, name="delete_message"),
+    path("send_group_message/", views.send_group_message, name="send_group_message"),
+    path("reply_message/<str:thread_id>/", views.reply_message, name="reply_message"),
+    path("filter_messages/<str:user_id>/", views.filter_messages, name="filter_messages"),
+    path("unread_count/<str:user_id>/", views.get_unread_count, name="unread_count"),
 ]

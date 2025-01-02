@@ -37,5 +37,23 @@ urlpatterns = [
     path('course/<course_id>/send_notification/', views.send_notification_to_students, name='send_notification_to_students'),
     path('group/<group_id>/manage/', views.manage_group, name='manage_group'),
 
-    
+
+    path('course/<str:course_id>/schedule/', views.update_course_schedule, name='update_course_schedule'),
+    path('instructor/<str:instructor_id>/performance/', views.get_instructor_performance, name='get_instructor_performance'),
+
+    path('student/<str:student_id>/performance/', views.get_student_performance, name='get_student_performance'),
+
+
+
+    path('logs/', views.get_logs, name='get_logs'),   #only the manager shalll be able to do this, making sure privacy is taken into account for instructors and students.
+
+    path('search/', views.search, name='search'),
+    path('reports/custom/', views.generate_custom_report, name='generate_custom_report'),
+
+
+    path('user/deactivate/<str:user_id>/', views.deactivate_user, name='deactivate_user'),
+    path('user/transfer/<str:user_id>/', views.transfer_user, name='transfer_user'),
+    path('user/update_profile/<str:user_id>/', views.update_profile, name='update_profile'),
+
 ]
+

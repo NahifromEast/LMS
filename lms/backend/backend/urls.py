@@ -21,5 +21,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('web.urls')),  # Connect app URLs
     path('api/manager/', include('web.manager_urls')),
-
+    path("messages/", include('web.urls.messaging_patterns')),
 ]
