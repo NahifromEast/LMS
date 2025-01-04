@@ -18,8 +18,10 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-    path('api/', include('web.urls')),  # Connect app URLs
-    path('api/manager/', include('web.manager_urls')),
-    path("messages/", include('web.urls.messaging_patterns')),
+    path('admin/', admin.site.urls),  # Django admin panel
+    path('api/', include('web.urls')),  # General API endpoints
+    path('api/manager/', include('web.manager_urls')),  # Manager-specific endpoints
+    path('api/instructor/', include('web.instructor_urls')),  # Instructor-specific endpoints
+    path('api/student/', include('web.student_urls')),  # Student-specific endpoints
+    path('api/messages/', include('web.messaging_urls')),  # Messaging-related endpoints
 ]

@@ -55,5 +55,7 @@ urlpatterns = [
     path('user/transfer/<str:user_id>/', views.transfer_user, name='transfer_user'),
     path('user/update_profile/<str:user_id>/', views.update_profile, name='update_profile'),
 
+    path('students/bulk_add/', views.bulk_upload, name='bulk_add_students'),
+
 ]
 

@@ -718,6 +718,7 @@ def list_students(request):
 
 
 # View student details
+@role_required('manager', 'instructor')
 def view_student(request, student_id):
     if request.method == 'GET':
         student = mongo_db.users.find_one({"_id": ObjectId(student_id), "role": "student"}, {"_id": 0})
@@ -728,6 +729,7 @@ def view_student(request, student_id):
 
 
 # View all students in a course
+@role_required('manager', 'instructor')
 def view_students_in_course(request, course_id):
     if request.method == 'GET':
         course = mongo_db.courses.find_one({"_id": ObjectId(course_id)})
@@ -739,6 +741,7 @@ def view_students_in_course(request, course_id):
 
 
 # View assignments for a course
+@role_required('manager', 'instructor')
 def view_assignments_for_course(request, course_id):
     if request.method == 'GET':
         assignments = list(mongo_db.assignments.find({"course_id": course_id}, {"_id": 0}))
@@ -747,6 +750,7 @@ def view_assignments_for_course(request, course_id):
 
 
 # View course reports
+@role_required('manager', 'instructor')
 def view_course_reports(request, course_id):
     if request.method == 'GET':
         reports = mongo_db.reports.find_one({"course_id": course_id}, {"_id": 0})
@@ -757,6 +761,7 @@ def view_course_reports(request, course_id):
 
 
 # Track student activity in a course
+@role_required('manager', 'instructor')
 def track_student_activity(request, course_id):
     if request.method == 'GET':
         activity_logs = list(mongo_db.activity_logs.find({"course_id": course_id}, {"_id": 0}))
@@ -766,6 +771,7 @@ def track_student_activity(request, course_id):
 
 # Create student groups
 @csrf_exempt
+@role_required('manager', 'instructor')
 def create_student_group(request):
     if request.method == 'POST':
         try:
@@ -1418,22 +1424,6 @@ def get_unread_count(request, user_id):
             return JsonResponse({"error": str(e)}, status=500)
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-####################################################################################################################
-########################################## User or student tasks ###################################################
 
 
 
