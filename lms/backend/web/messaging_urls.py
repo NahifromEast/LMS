@@ -9,7 +9,7 @@ from django.http import HttpResponse
 
 
 
-messaging_patterns = [
+urlpatterns = [
     path("send_message/", views.send_message, name="send_message"),
     path("get_messages/<str:user_id>/", views.get_messages, name="get_messages"),
     path("mark_message_read/<str:message_id>/", views.mark_message_read, name="mark_message_read"),

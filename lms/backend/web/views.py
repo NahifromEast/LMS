@@ -81,11 +81,11 @@ def home(request):
     return render(request, 'home.html')  # Use a template for the homepage
 
 
-def role_required(role):
+def role_required(*roles):
     def decorator(func):
         def wrapper(request, *args, **kwargs):
             user_role = request.headers.get("Role")  # Example: Use JWT or headers
-            if user_role != role:
+            if user_role not in roles:
                 return JsonResponse({"error": "Permission denied"}, status=403)
             return func(request, *args, **kwargs)
         return wrapper
@@ -718,7 +718,7 @@ def list_students(request):
 
 
 # View student details
-@role_required('manager', 'instructor')
+@role_required("manager", "instructor")
 def view_student(request, student_id):
     if request.method == 'GET':
         student = mongo_db.users.find_one({"_id": ObjectId(student_id), "role": "student"}, {"_id": 0})
@@ -729,7 +729,7 @@ def view_student(request, student_id):
 
 
 # View all students in a course
-@role_required('manager', 'instructor')
+@role_required("manager", "instructor")
 def view_students_in_course(request, course_id):
     if request.method == 'GET':
         course = mongo_db.courses.find_one({"_id": ObjectId(course_id)})
@@ -741,7 +741,7 @@ def view_students_in_course(request, course_id):
 
 
 # View assignments for a course
-@role_required('manager', 'instructor')
+@role_required("manager", "instructor")
 def view_assignments_for_course(request, course_id):
     if request.method == 'GET':
         assignments = list(mongo_db.assignments.find({"course_id": course_id}, {"_id": 0}))
@@ -750,7 +750,7 @@ def view_assignments_for_course(request, course_id):
 
 
 # View course reports
-@role_required('manager', 'instructor')
+@role_required("manager", "instructor")
 def view_course_reports(request, course_id):
     if request.method == 'GET':
         reports = mongo_db.reports.find_one({"course_id": course_id}, {"_id": 0})
@@ -761,7 +761,7 @@ def view_course_reports(request, course_id):
 
 
 # Track student activity in a course
-@role_required('manager', 'instructor')
+@role_required("manager", "instructor")
 def track_student_activity(request, course_id):
     if request.method == 'GET':
         activity_logs = list(mongo_db.activity_logs.find({"course_id": course_id}, {"_id": 0}))
@@ -771,7 +771,7 @@ def track_student_activity(request, course_id):
 
 # Create student groups
 @csrf_exempt
-@role_required('manager', 'instructor')
+@role_required("manager", "instructor")
 def create_student_group(request):
     if request.method == 'POST':
         try:
@@ -1435,3 +1435,26 @@ def update_profile(request, user_id):
             {"$set": data}
         )
         return JsonResponse({"message": "Profile updated successfully"})
+
+@csrf_exempt
+@role_required('manager', 'instructor')
+def generate_attendance_report(request, course_id):
+    if request.method == 'GET':
+        try:
+            # Fetch attendance data for the course
+            attendance_data = mongo_db.attendance.find({"course_id": ObjectId(course_id)})
+            report = []
+            for record in attendance_data:
+                report.append({
+                    "student_id": str(record["student_id"]),
+                    "date": record["date"],
+                    "status": record["status"]
+                })
+            
+            # Log the action
+            log_action("generate_attendance_report", request.headers.get("User-ID"), {"course_id": course_id})
+            
+            return JsonResponse({"report": report}, status=200)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+    return JsonResponse({"error": "Invalid request method"}, status=405)
