@@ -1436,6 +1436,7 @@ def update_profile(request, user_id):
         )
         return JsonResponse({"message": "Profile updated successfully"})
 
+
 @csrf_exempt
 @role_required('manager', 'instructor')
 def generate_attendance_report(request, course_id):
