@@ -11,8 +11,11 @@ from backend.settings import mongo_db
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django_ratelimit.decorators import ratelimit
-
-
+from pymongo import MongoClient
+from bson import ObjectId
+# Connect to MongoDB
+client = MongoClient('mongodb://localhost:27017/')
+course_db = client['course']  # Use the 'course' database
 
 def login_view(request):
     return JsonResponse({"message": "Login Page Placeholder"})
@@ -67,9 +70,12 @@ def validate_mfa_code(request):
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 def get_courses(request):
-    courses = list(mongo_db.courses.find({}, {"_id": 0}))  # Exclude ObjectId
-    print(courses)
+    courses_collection = course_db['courses']  # Use the 'courses' collection
+    courses = list(courses_collection.find())
+    for course in courses:
+        course['_id'] = str(course['_id'])  # Convert ObjectId to string
     return JsonResponse(courses, safe=False)
+
 
 def add_course(request):
     new_course = {
