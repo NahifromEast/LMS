@@ -13,6 +13,13 @@ from django.views.decorators.csrf import csrf_exempt
 from django_ratelimit.decorators import ratelimit
 
 
+
+def login_view(request):
+    return JsonResponse({"message": "Login Page Placeholder"})
+
+def dashboard_view(request):
+    return JsonResponse({"message": "Dashboard Page Placeholder"})
+
 def generate_mfa_code(user_id):
     # Generate a 6-digit OTP
     mfa_code = str(random.randint(100000, 999999))
