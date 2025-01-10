@@ -70,11 +70,11 @@ def validate_mfa_code(request):
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
 def get_courses(request):
-    courses_collection = course_db['courses']  # Use the 'courses' collection
-    courses = list(courses_collection.find())
-    for course in courses:
+    courses_collection = course_db['course']  # Use the 'courses' collection
+    course = list(courses_collection.find())
+    for course in course:
         course['_id'] = str(course['_id'])  # Convert ObjectId to string
-    return JsonResponse(courses, safe=False)
+    return JsonResponse(course, safe=False)
 
 
 def add_course(request):
