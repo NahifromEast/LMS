@@ -69,13 +69,14 @@ def validate_mfa_code(request):
 
     return JsonResponse({"error": "Invalid request method"}, status=405)
 
-def get_courses(request):
-    courses_collection = course_db['course']  # Use the 'courses' collection
-    course = list(courses_collection.find())
-    for course in course:
-        course['_id'] = str(course['_id'])  # Convert ObjectId to string
-    return JsonResponse(course, safe=False)
 
+
+def get_courses(request):
+    courses = list(mongo_db.course.find({}, {"_id": 1, "name": 1, "description": 1}))  # Include _id, name, and description
+    for course in courses:
+        course["_id"] = str(course["_id"])  # Convert ObjectId to string
+    return JsonResponse(courses, safe=False)
+    
 
 def add_course(request):
     new_course = {
