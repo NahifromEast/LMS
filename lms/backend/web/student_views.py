@@ -6,23 +6,47 @@ import datetime
 import csv
 import random
 from backend.settings import mongo_db
+from django.contrib.auth import authenticate
+from django.http import JsonResponse
 
-
+@csrf_exempt
+def get_course_details(request, course_id):
+    course = mongo_db.course.find_one({"_id": ObjectId(course_id)})
+    if course:
+        course["_id"] = str(course["_id"])  # Convert ObjectId to string
+        return JsonResponse(course, safe=False)
+    else:
+        return JsonResponse({"error": "Course not found"}, status=404)
 
 @csrf_exempt
 def get_enrolled_courses(request, student_id):
-    """
-    Returns the list of courses the student is enrolled in.
-    """
-    if request.method == 'GET':
-        try:
-            courses = list(mongo_db.courses.find({"students": student_id}, {"_id": 0}))
+    if request.method == "GET":
+        # Find the student's enrolled courses by `student_id`
+        enrolled_courses = mongo_db.student_enrolled_courses.find_one({"student_id": student_id})
+        
+        if enrolled_courses:
+            # Convert ObjectId to string and prepare response
+            courses = enrolled_courses.get("courses", [])
+            for course in courses:
+                course["_id"] = str(course["_id"])
             return JsonResponse({"enrolled_courses": courses}, safe=False)
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=400)
-    return JsonResponse({"error": "Invalid request method"}, status=405)
-
-
+        else:
+            return JsonResponse({"message": "No enrolled courses found for this student"}, status=404)
+    else:
+        return JsonResponse({"error": "Only GET requests are allowed"}, status=405)
+    
+@csrf_exempt
+def get_courses(request):
+    if request.method == "GET":
+        # Fetch all courses from the "course" collection
+        courses = list(mongo_db.course.find())
+        # Convert ObjectIds to strings for JSON compatibility
+        for course in courses:
+            course["_id"] = str(course["_id"])
+        return JsonResponse({"courses": courses}, safe=False)
+    else:
+        return JsonResponse({"error": "Only GET requests are allowed"}, status=405)
+    
 @csrf_exempt
 def get_course_details(request, course_id):
     """

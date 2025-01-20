@@ -17,14 +17,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from web import views
+from django.contrib import admin
+from django.urls import path, include 
+from web.views import login_view  # Adjust the import as needed
+
+
 
 urlpatterns = [
-    path('admin/', admin.site.urls),  # Django admin panel
-    path('api/', include('web.urls')),  # General API endpoints
+    path('admin/', admin.site.urls),
     path('api/manager/', include('web.manager_urls')),  # Manager-specific endpoints
     path('api/instructor/', include('web.instructor_urls')),  # Instructor-specific endpoints
     path('api/student/', include('web.student_urls')),  # Student-specific endpoints
     path('api/messages/', include('web.messaging_urls')),  # Messaging-related endpoints
-    path('login/', views.login_view, name='login'),  # Login endpoint
-    path('dashboard/', views.dashboard_view, name='dashboard'),  # Dashboard endpoint
+    path('api/login/', login_view, name='login'),  # Ensure this path exists
 ]

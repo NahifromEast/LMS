@@ -1,15 +1,14 @@
 from django.urls import path
 from . import views
 from web.views import home
-from . import instructor_views, student_views
-
-from django.http import HttpResponse
-
+from . import student_views
 
 
 
 urlpatterns = [
     path('get_enrolled_courses/<str:student_id>/', student_views.get_enrolled_courses, name='get_enrolled_courses'),
+    path('course/<str:course_id>/', student_views.get_course_details, name='get_course_details'),
+    path('student/<str:student_id>/courses/', student_views.get_enrolled_courses, name='get_enrolled_courses'),
     path('search_available_courses/', student_views.search_available_courses, name='search_available_courses'),
     path('submit_homework/<str:assignment_id>/', student_views.submit_homework, name='submit_homework'),
     path('submit_quiz_answers/<str:quiz_id>/', student_views.submit_quiz_answers, name='submit_quiz_answers'),

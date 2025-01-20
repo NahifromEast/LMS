@@ -169,4 +169,16 @@ DATABASES = {
     }
 }
 
+MIGRATION_MODULES = {
+    'auth': None,
+    'contenttypes': None,
+    'sessions': None,
+    'admin': None,
+}
+
+
+
+
+CORS_ORIGIN_ALLOW_ALL = True  # Allow all origins for development
+
 print(f"Connected to MongoDB: {mongo_db}")

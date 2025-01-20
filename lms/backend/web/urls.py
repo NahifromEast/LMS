@@ -1,8 +1,9 @@
 from django.urls import path
 from . import views
+from django.contrib import admin
 from web.views import home
-from . import instructor_views, student_views
-
+from django.contrib import admin
+from django.urls import path, include
 from django.http import HttpResponse
 
 
@@ -39,7 +40,9 @@ urlpatterns = [
     path('user/list_paginated/', views.list_users_paginated, name='list_users_paginated'),
 
     #authentications
-    path('auth/login/', views.login_user, name='login_user'),
+    
+    path('admin/', admin.site.urls),
+    path('login/', views.login_view, name='login_view'),  # Correct path
     path('auth/logout/', views.logout_user, name='logout_user'),
     path('auth/register/', views.register_user, name='register_user'),
     path('auth/forgot_password/', views.forgot_password, name='forgot_password'),

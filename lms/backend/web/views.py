@@ -10,15 +10,49 @@ from django.conf import settings
 from backend.settings import mongo_db
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate
 from django_ratelimit.decorators import ratelimit
 from pymongo import MongoClient
 from bson import ObjectId
+
+
 # Connect to MongoDB
 client = MongoClient('mongodb://localhost:27017/')
 course_db = client['course']  # Use the 'course' database
 
+
+@csrf_exempt
 def login_view(request):
-    return JsonResponse({"message": "Login Page Placeholder"})
+    if request.method == "POST":
+        try:
+            # Parse the request body
+            data = json.loads(request.body)
+            email = data.get("email")  # Assuming email is used for login
+            password = data.get("password")
+
+            # Log inputs for debugging
+            print(f"Login attempt: email={email}, password={password}")
+
+            # Connect to MongoDB and find the user
+            client = MongoClient("mongodb://127.0.0.1:27017/")
+            db = client['masesi_db']
+            user = db['users'].find_one({"email": email})  # Use 'email' field to find user
+
+            # Log user retrieved
+            print(f"Retrieved user: {user}")
+
+            if user and user.get("password") == password:
+                # Login successful
+                return JsonResponse({"token": "dummy_token", "role": user.get("role")}, status=200)
+
+            # Invalid credentials
+            return JsonResponse({"error": "Invalid credentials"}, status=401)
+        except Exception as e:
+            print(f"Error in login_view: {str(e)}")
+            return JsonResponse({"error": "Server error"}, status=500)
+
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+    
 
 def dashboard_view(request):
     return JsonResponse({"message": "Dashboard Page Placeholder"})
