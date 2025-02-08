@@ -25,6 +25,7 @@ from web.views import login_view  # Adjust the import as needed
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('api/', include('web.urls')),  # Manager-specific endpoints
     path('api/manager/', include('web.manager_urls')),  # Manager-specific endpoints
     path('api/instructor/', include('web.instructor_urls')),  # Instructor-specific endpoints
     path('api/student/', include('web.student_urls')),  # Student-specific endpoints
